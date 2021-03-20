@@ -1,0 +1,71 @@
+version: '3'
+services:
+  ############################
+  # Go app + Dapr sidecar
+  ############################
+  goapp:
+    build: .
+    command: ["./goapp"]
+    ports:
+      - "8080:80"
+    depends_on:
+      - redis
+      - mysql
+      - placement
+    networks:
+      - service-network
+  goapp-dapr:
+    image: "daprio/daprd:edge"
+    command: ["./daprd",
+     "-app-id", "goapp",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./components/:/components"
+    depends_on:
+      - goapp
+    network_mode: "service:goapp"
+  ############################
+  # Dapr placement service
+  ############################
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - "50006:50006"
+    networks:
+      - service-network
+  ############################
+  # Redis state store
+  ############################
+  redis:
+    image: 'bitnami/redis:latest'
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - service-network
+  ############################
+  # MySQL state store
+  ############################
+  mysql:
+    image: 'docker.io/bitnami/mysql:8.0-debian-10'
+    ports:
+      - '3306:3306'
+    volumes:
+      - 'mysql_data:/bitnami/mysql/data'
+    environment:
+      - MYSQL_ROOT_PASSWORD=password123
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mysql/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    networks:
+      - service-network
+networks:
+    service-network:
+volumes:
+  mysql_data:
+    driver: local
