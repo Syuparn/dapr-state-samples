@@ -12,6 +12,7 @@ var (
 	states = []string{
 		"redis-state",
 		"mysql-state",
+		"mongodb-state",
 	}
 )
 

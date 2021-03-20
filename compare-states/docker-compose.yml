@@ -64,8 +64,23 @@ services:
       retries: 6
     networks:
       - service-network
+  ############################
+  # MongoDB state store
+  ############################
+  mongodb:
+    image: 'docker.io/bitnami/mongodb:4.4-debian-10'
+    ports:
+      - "27017:27017"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - 'mongodb_data:/bitnami/mongodb'
+    networks:
+      - service-network
 networks:
     service-network:
 volumes:
   mysql_data:
+    driver: local
+  mongodb_data:
     driver: local
