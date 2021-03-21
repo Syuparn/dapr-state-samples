@@ -1,4 +1,4 @@
-# Simple Redis state sample 
+# State comparison sample 
 
 ```bash
 $ docker-compose up -d --build
