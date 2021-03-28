@@ -26,6 +26,30 @@ services:
       - goapp
     network_mode: "service:goapp"
   ############################
+  # test container + Dapr sidecar
+  ############################
+  test:
+    build: .
+    tty: true
+    depends_on:
+      - redis
+      - placement
+    networks:
+      - service-network
+    volumes:
+      - "./goapp/testdata:/go/src/testdata"
+  test-dapr:
+    image: "daprio/daprd:edge"
+    command: ["./daprd",
+     "-app-id", "test",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./components/:/components"
+    depends_on:
+      - test
+    network_mode: "service:test"
+  ############################
   # Dapr placement service
   ############################
   placement:
