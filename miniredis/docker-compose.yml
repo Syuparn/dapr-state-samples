@@ -1,0 +1,60 @@
+version: '3'
+services:
+  ############################
+  # Go app + Dapr sidecar
+  ############################
+  goapp:
+    build:
+      context: .
+      dockerfile: goapp.Dockerfile
+    command: ["./goapp"]
+    ports:
+      - "50002:50002"
+      - "8080:80"
+    depends_on:
+      - redis
+      - placement
+    networks:
+      - service-network
+  goapp-dapr:
+    image: "daprio/daprd:edge"
+    command: ["./daprd",
+     "-app-id", "goapp",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./components/:/components"
+    depends_on:
+      - goapp
+    network_mode: "service:goapp"
+  ############################
+  # Dapr placement service
+  ############################
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - "50006:50006"
+    networks:
+      - service-network
+  ############################
+  # Redis state store
+  ############################
+  redis:
+    build:
+      context: .
+      dockerfile: miniredis.Dockerfile
+    ports:
+      - "6379:6379"
+    networks:
+      - service-network
+    command: ./miniredis-parttime
+  test:
+    build:
+      context: .
+      dockerfile: miniredis.Dockerfile
+    tty: true
+    networks:
+      - service-network
+networks:
+    service-network:
