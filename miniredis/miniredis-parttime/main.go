@@ -109,5 +109,5 @@ func mockInfoHook(c *server.Peer, cmd string, args ...string) bool {
 	}
 	c.Flush()
 
-	return false
+	return true
 }
