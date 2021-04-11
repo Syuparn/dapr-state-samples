@@ -1,6 +1,6 @@
-# MiniRedis state sample 
+# Miniredis state sample 
 
-Simulate abnormal scenario of Redis state by MiniRedis
+Simulate abnormal scenario of Redis state by Miniredis
 
 ```bash
 $ docker-compose up -d --build
